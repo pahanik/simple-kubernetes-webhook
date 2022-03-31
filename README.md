@@ -129,7 +129,19 @@ kubectl apply -f dev/manifests/pods/bad-name.pod.yaml
 Error from server: error when creating "dev/manifests/pods/bad-name.pod.yaml": admission webhook "simple-kubernetes-webhook.acme.com" denied the request: pod name contains "offensive"
 ```
 You should see in the admission webhook logs that the pod validation failed. It's possible you will also see that the pod was mutated, as webhook configurations are not ordered.
+```
+> make request
 
+🚀 Deploying request testing resources...
+kubectl apply -f dev/manifests/request/
+pod/requests-2 unchanged
+Error from server: error when creating "dev/manifests/request/requests-four.pod.yaml": admission webhook "simple-kubernetes-webhook.acme.com" denied the request: Container request-four has cpu request 4000m > 2000m in apps namespace. Validated namespaces: map[apps: default:]
+Error from server: error when creating "dev/manifests/request/requests-three.pod.yaml": admission webhook "simple-kubernetes-webhook.acme.com" denied the request: Container request-two has cpu request 3000m > 2000m in apps namespace. Validated namespaces: map[apps: default:]
+Makefile:88: recipe for target 'request' failed
+make: *** [request] Error 1
+```
+You should see that the validation passes for pod with 2 cpu requests in container resources specification. It fails when cpu requests > 2 and shows pods namespace and which namespaces are specified in 'validator-config' ConfigMap.
+```
 ## Testing
 Unit tests can be run with the following command:
 ```
